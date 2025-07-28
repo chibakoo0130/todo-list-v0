@@ -27,6 +27,10 @@ export const useTodosOfProject = (projectId: string) => {
       where('user_id', '==', loginUser?.uid ?? ''),
       orderBy('created_at', 'asc')
     );
+
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
     const unsubscribe = onSnapshot(q, snapshot => {
       const todos = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -36,7 +40,8 @@ export const useTodosOfProject = (projectId: string) => {
         status: doc.data().status,
         created_at: doc.data().created_at,
         updated_at: doc.data().updated_at,
-      }));
+      // 完了していないか、3日前以内に更新されたタスクのみ取得
+      })).filter(todo => (todo.status == 0 || new Date(todo.updated_at) >= threeDaysAgo));
       setTodos(todos);
     });
 
